@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Transaction, TransactionType, Member } from '../types';
 import { CATEGORIES, MEMBERS } from '../lib/constants';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Edit2, X } from 'lucide-react';
 
 interface Props {
   onAdd: (t: Transaction) => void;
+  onUpdate?: (t: Transaction) => void;
+  onCancelEdit?: () => void;
+  editingTransaction?: Transaction | null;
 }
 
-export function TransactionForm({ onAdd }: Props) {
+export function TransactionForm({ onAdd, onUpdate, onCancelEdit, editingTransaction }: Props) {
   const [type, setType] = useState<TransactionType>('EXPENSE');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState(CATEGORIES[0]);
@@ -16,32 +19,73 @@ export function TransactionForm({ onAdd }: Props) {
   const [member, setMember] = useState<Member>('Chồng');
   const [note, setNote] = useState('');
 
+  useEffect(() => {
+    if (editingTransaction) {
+      setType(editingTransaction.type);
+      setAmount(editingTransaction.amount.toString());
+      setCategory(editingTransaction.category);
+      setDate(editingTransaction.date);
+      setMember(editingTransaction.member);
+      setNote(editingTransaction.note || '');
+    } else {
+      setType('EXPENSE');
+      setAmount('');
+      setCategory(CATEGORIES[0]);
+      setDate(new Date().toISOString().split('T')[0]);
+      setMember('Chồng');
+      setNote('');
+    }
+  }, [editingTransaction]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || isNaN(Number(amount))) return;
 
-    const newTransaction: Transaction = {
-      id: uuidv4(),
-      type,
-      amount: Number(amount),
-      category,
-      date,
-      member,
-      note,
-      timestamp: Date.now()
-    };
-
-    onAdd(newTransaction);
-    setAmount('');
-    setNote('');
+    if (editingTransaction && onUpdate) {
+      onUpdate({
+        ...editingTransaction,
+        type,
+        amount: Number(amount),
+        category,
+        date,
+        member,
+        note
+      });
+    } else {
+      const newTransaction: Transaction = {
+        id: uuidv4(),
+        type,
+        amount: Number(amount),
+        category,
+        date,
+        member,
+        note,
+        timestamp: Date.now()
+      };
+      onAdd(newTransaction);
+      setAmount('');
+      setNote('');
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 p-6">
-      <h3 className="text-base font-bold text-neutral-900 mb-5 flex items-center gap-2">
-        <PlusCircle className="w-5 h-5 text-indigo-600" />
-        Thêm Giao Dịch
-      </h3>
+      <div className="flex justify-between items-center mb-5">
+        <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2">
+          {editingTransaction ? <Edit2 className="w-5 h-5 text-indigo-600" /> : <PlusCircle className="w-5 h-5 text-indigo-600" />}
+          {editingTransaction ? 'Cập Nhật Giao Dịch' : 'Thêm Giao Dịch'}
+        </h3>
+        {editingTransaction && onCancelEdit && (
+          <button 
+            type="button" 
+            onClick={onCancelEdit}
+            className="text-neutral-400 hover:text-rose-500 transition-colors p-1"
+            title="Hủy cập nhật"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+      </div>
       
       <div className="flex bg-white/50 p-1 rounded-xl border border-white/60 mb-5 shadow-inner">
         <button
@@ -120,7 +164,7 @@ export function TransactionForm({ onAdd }: Props) {
         </div>
 
         <button type="submit" className="w-full py-3 mt-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:-translate-y-0.5 transition-all">
-          Lưu Giao Dịch
+          {editingTransaction ? 'Cập Nhật Giao Dịch' : 'Lưu Giao Dịch'}
         </button>
       </div>
     </form>

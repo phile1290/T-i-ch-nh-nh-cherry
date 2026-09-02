@@ -6,11 +6,13 @@ import { TransactionForm } from './TransactionForm';
 import { MonthlyComparison } from './MonthlyComparison';
 import { FinancialReport } from './FinancialReport';
 import { subMonths, format } from 'date-fns';
-import { Wallet, Trash2, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Wallet, Trash2, Edit2, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Transaction } from '../types';
 
 export function Dashboard() {
-  const { transactions, addTransaction, deleteTransaction } = useTransactions();
+  const { transactions, addTransaction, updateTransaction, deleteTransaction } = useTransactions();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
 
   const currentMonthStats = useMemo(() => getStatsForMonth(transactions, currentDate), [transactions, currentDate]);
   const previousMonthStats = useMemo(() => getStatsForMonth(transactions, subMonths(currentDate, 1)), [transactions, currentDate]);
@@ -60,7 +62,12 @@ export function Dashboard() {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8 space-y-6 sm:space-y-8">
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
             <div className="xl:col-span-1 space-y-6 sm:space-y-8">
-              <TransactionForm onAdd={addTransaction} />
+              <TransactionForm 
+                onAdd={addTransaction}
+                onUpdate={(t) => { updateTransaction(t); setEditingTx(null); }}
+                onCancelEdit={() => setEditingTx(null)}
+                editingTransaction={editingTx}
+              />
               
               <div className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 p-6">
                 <h3 className="text-base font-bold text-neutral-900 mb-5 flex items-center gap-2">
@@ -83,17 +90,29 @@ export function Dashboard() {
                             <p className="text-[11px] font-medium text-neutral-500">{t.date} {t.note && `• ${t.note}`}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-3 flex-shrink-0">
                           <span className={`text-sm font-extrabold ${t.type === 'INCOME' ? 'text-emerald-600' : 'text-neutral-900'}`}>
                             {t.type === 'INCOME' ? '+' : '-'}{t.amount.toLocaleString('vi-VN')}đ
                           </span>
-                          <button 
-                            onClick={() => deleteTransaction(t.id)}
-                            className="text-neutral-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity bg-white p-1.5 rounded-md shadow-sm border border-neutral-100"
-                            title="Xóa giao dịch"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={() => {
+                                setEditingTx(t);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              className="text-neutral-500 hover:text-indigo-600 bg-white/80 lg:bg-white p-1.5 rounded-md shadow-sm border border-neutral-200 lg:border-neutral-100 transition-colors"
+                              title="Chỉnh sửa giao dịch"
+                            >
+                              <Edit2 className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
+                            </button>
+                            <button 
+                              onClick={() => deleteTransaction(t.id)}
+                              className="text-neutral-500 hover:text-rose-600 bg-white/80 lg:bg-white p-1.5 rounded-md shadow-sm border border-neutral-200 lg:border-neutral-100 transition-colors"
+                              title="Xóa giao dịch"
+                            >
+                              <Trash2 className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </li>
                     ))}

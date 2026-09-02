@@ -23,6 +23,14 @@ export function useTransactions() {
     });
   }, []);
   
+  const updateTransaction = useCallback((updatedTx: Transaction) => {
+    setTransactions(prev => {
+      const updated = prev.map(t => t.id === updatedTx.id ? updatedTx : t);
+      localStorage.setItem('family_expenses', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const deleteTransaction = useCallback((id: string) => {
     setTransactions(prev => {
       const updated = prev.filter(t => t.id !== id);
@@ -31,5 +39,5 @@ export function useTransactions() {
     });
   }, []);
 
-  return { transactions, addTransaction, deleteTransaction };
+  return { transactions, addTransaction, updateTransaction, deleteTransaction };
 }

@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "collections": [
+    {
+      "name": "transactions",
+      "description": "Stores all financial transactions for the family.",
+      "rules": [
+        {
+          "access": ["read", "write"],
+          "condition": "isAuthenticated()",
+          "description": "Any authenticated family member can read and write transactions."
+        }
+      ],
+      "fields": [
+        { "name": "type", "type": "string" },
+        { "name": "amount", "type": "number" },
+        { "name": "category", "type": "string" },
+        { "name": "date", "type": "string" },
+        { "name": "member", "type": "string" },
+        { "name": "note", "type": "string" },
+        { "name": "timestamp", "type": "number" }
+      ]
+    }
+  ]
+}

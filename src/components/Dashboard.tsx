@@ -6,12 +6,12 @@ import { TransactionForm } from './TransactionForm';
 import { MonthlyComparison } from './MonthlyComparison';
 import { FinancialReport } from './FinancialReport';
 import { subMonths, format } from 'date-fns';
-import { Wallet, Trash2, Edit2, ArrowUpRight, ArrowDownRight, Loader2, LogIn, LogOut } from 'lucide-react';
+import { Wallet, Trash2, Edit2, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
 import { Transaction, Member, TransactionType } from '../types';
 import { MEMBERS } from '../lib/constants';
 
 export function Dashboard() {
-  const { transactions, addTransaction, updateTransaction, deleteTransaction, loading, user, authInitialized, signIn, logout } = useTransactions();
+  const { transactions, addTransaction, updateTransaction, deleteTransaction, loading } = useTransactions();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const [activeMemberTab, setActiveMemberTab] = useState<Member>('Chồng');
@@ -24,31 +24,10 @@ export function Dashboard() {
   const sortedTransactions = [...transactions].sort((a, b) => b.timestamp - a.timestamp);
   const filteredTransactions = sortedTransactions.filter(t => t.member === activeMemberTab && t.type === activeTypeTab);
 
-  if (!authInitialized || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f4f7f9]">
         <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f4f7f9] p-4">
-        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Wallet className="w-8 h-8 text-indigo-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-neutral-900 mb-2">Đăng nhập</h1>
-          <p className="text-neutral-500 mb-8">Vui lòng đăng nhập bằng Google để đồng bộ dữ liệu thu chi cho gia đình của bạn.</p>
-          <button
-            onClick={signIn}
-            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl transition-colors"
-          >
-            <LogIn className="w-5 h-5" />
-            Đăng nhập với Google
-          </button>
-        </div>
       </div>
     );
   }
@@ -88,13 +67,6 @@ export function Dashboard() {
                     className="bg-transparent text-sm font-bold text-indigo-700 focus:outline-none cursor-pointer"
                  />
               </div>
-              <button 
-                onClick={logout}
-                className="p-2.5 text-neutral-500 hover:text-rose-600 bg-white/60 hover:bg-rose-50 rounded-xl border border-white/80 shadow-sm transition-colors"
-                title="Đăng xuất"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
             </div>
           </div>
         </header>
